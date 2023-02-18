@@ -113,6 +113,9 @@ void app_main() {
 	printf("setting SSD1306 screen to 32-row mode...\n");
 	//SSD1306_Screen_fix_32row(&screen);
 
+	/// Screen specific features stops here,
+	/// Painter take the control
+
 	painter.screen = &screen;
 
 	printf("clearing screen (from painter)...\n");

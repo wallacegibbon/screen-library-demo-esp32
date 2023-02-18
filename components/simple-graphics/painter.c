@@ -24,7 +24,6 @@ void Painter_clear(
 		clear(self->screen, p1, p2, color);
 	else
 		Painter_clear_fallback(self, p1, p2, color);
-
 }
 
 void Painter_flush(struct Painter *self) {

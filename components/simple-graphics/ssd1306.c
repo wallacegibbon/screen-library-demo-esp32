@@ -115,9 +115,9 @@ void SSD1306_Screen_draw_point(
 	int byte_idx;
 	int tmp;
 
-	if (p.x >= self->size.x || p.y >= self->size.y) return;
+	if (p.x >= self->size.x || p.y >= self->size.y)
+		return;
 
-	//printf("SSD1306_Screen_draw_point: {%d,%d}\n", p.x, p.y);
 	page_idx = p.y / 8;
 	byte_idx = p.y % 8;
 
@@ -126,7 +126,8 @@ void SSD1306_Screen_draw_point(
 	tmp |= color << byte_idx;
 	self->buffer[p.x][page_idx] = tmp;
 
-	if (!self->auto_flush) return;
+	if (!self->auto_flush)
+		return;
 
 	SSD1306_Screen_start_transmit(self);
 

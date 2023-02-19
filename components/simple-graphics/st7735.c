@@ -22,35 +22,42 @@ static inline void ST7735_Screen_dc_low(struct ST7735_Screen *self) {
 	ESP_ERROR_CHECK(gpio_set_level(self->dc_pin, 0));
 }
 
-void ST7735_Screen_write_byte(struct ST7735_Screen *self, uint8_t data) {
+void ST7735_Screen_write_byte(
+	struct ST7735_Screen *self,
+	uint8_t *data,
+	int length
+) {
 	spi_transaction_t transac;
 
 	memset(&transac, 0, sizeof(transac));
-	transac.length = 8; // in bits
-	transac.tx_buffer = &data;
+	transac.length = length * 8; // in bits
+	transac.tx_buffer = data;
 	transac.user = (void *) 1;
 
 	ESP_ERROR_CHECK(gpio_set_level(self->cs_pin, 0));
 
 	ESP_ERROR_CHECK(spi_device_polling_transmit(*self->dev, &transac));
 
-	ESP_ERROR_CHECK(gpio_set_level(self->cs_pin, 0));
+	ESP_ERROR_CHECK(gpio_set_level(self->cs_pin, 1));
 }
 
 void ST7735_Screen_write_data(struct ST7735_Screen *self, uint16_t data) {
+	uint8_t buffer[2];
+
+	buffer[0] = data >> 8;
+	buffer[1] = data;
 	ST7735_Screen_dc_high(self);
-	ST7735_Screen_write_byte(self, data >> 8);
-	ST7735_Screen_write_byte(self, data & 0xFF);
+	ST7735_Screen_write_byte(self, buffer, 2);
 }
 
 void ST7735_Screen_write_data8(struct ST7735_Screen *self, uint8_t data) {
 	ST7735_Screen_dc_high(self);
-	ST7735_Screen_write_byte(self, data);
+	ST7735_Screen_write_byte(self, &data, 1);
 }
 
 void ST7735_Screen_write_cmd(struct ST7735_Screen *self, uint8_t data) {
 	ST7735_Screen_dc_low(self);
-	ST7735_Screen_write_byte(self, data);
+	ST7735_Screen_write_byte(self, &data, 1);
 }
 
 void ST7735_Screen_set_address(

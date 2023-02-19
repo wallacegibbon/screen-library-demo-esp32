@@ -30,22 +30,24 @@ void spi_device_init(spi_device_handle_t *dev) {
 	spi_device_interface_config_t interface_config;
 
 	bus_config.mosi_io_num = GPIO_NUM_3;
+	//bus_config.miso_io_num = GPIO_NUM_3;
 	bus_config.miso_io_num = -1;
 	bus_config.sclk_io_num = GPIO_NUM_5;
 	bus_config.quadwp_io_num = -1;
 	bus_config.quadhd_io_num = -1;
-	//bus_config.max_transfer_sz = 64 * 8;
-	//bus_config.flags = 0;
-	//bus_config.intr_flags = 0;
+	bus_config.max_transfer_sz = 64 * 8;
+	bus_config.flags = 0;
+	bus_config.intr_flags = 0;
 
 	ESP_ERROR_CHECK(spi_bus_initialize(
 		SPI2_HOST, &bus_config, SPI_DMA_DISABLED
 	));
 
-	interface_config.address_bits = 0;
+	/// we don't use command or address in this app
 	interface_config.command_bits = 0;
-	interface_config.clock_speed_hz = SPI_MASTER_FREQ_10M;
+	interface_config.address_bits = 0;
 	interface_config.mode = 0;
+	interface_config.clock_speed_hz = SPI_MASTER_FREQ_10M;
 	interface_config.duty_cycle_pos = 0;
 	interface_config.cs_ena_pretrans = 0;
 	interface_config.cs_ena_posttrans = 0;
@@ -101,14 +103,15 @@ void fancy_display_2(struct Painter *painter) {
 }
 
 void app_main() {
+	/*
 	spi_device_handle_t st7735_dev;
 	struct ST7735_Screen screen2;
-	//struct SSD1306_Screen screen1;
+	*/
+	struct SSD1306_Screen screen1;
 	struct Painter painter;
 	struct Point p1;
 	struct Point p2;
 
-	/*
 	printf("initializing I2C device...\n");
 	i2c_device_init();
 
@@ -123,8 +126,8 @@ void app_main() {
 
 	/// Screen specific features stops here,
 	/// Painter take the control
-	*/
 
+	/*
 	/// start the BG LED of T-Dongle-S3
 	ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_38, GPIO_MODE_OUTPUT));
 	//ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_38, 1));
@@ -135,30 +138,31 @@ void app_main() {
 	ST7735_Screen_initialize(
 		&screen2, &st7735_dev, GPIO_NUM_4, GPIO_NUM_1, GPIO_NUM_2
 	);
+	*/
 
-	//painter.screen = &screen1;
-	painter.screen = &screen2;
+	painter.screen = &screen1;
+	//painter.screen = &screen2;
 
 	printf("clearing screen...\n");
-	/*
 	Painter_clear(&painter, BLACK_1bit);
-	*/
+	/*
 	Painter_clear(&painter, BLACK_16bit);
+	*/
 
 	printf("drawing a rectangle...\n");
 	Point_initialize(&p1, 64 - 50, 32 - 20);
 	Point_initialize(&p2, 64 + 50, 32 + 20);
-	/*
 	Painter_draw_rectangle(&painter, p1, p2, WHITE_1bit);
-	*/
+	/*
 	Painter_draw_rectangle(&painter, p1, p2, BLUE_16bit);
+	*/
 
 	printf("drawing a circle on top left...\n");
 	Point_initialize(&p1, 64 - 50, 32 - 20);
-	/*
 	Painter_draw_circle(&painter, p1, 5, WHITE_1bit);
-	*/
+	/*
 	Painter_draw_circle(&painter, p1, 5, RED_16bit);
+	*/
 
 	/*
 	printf("drawing a line...\n");

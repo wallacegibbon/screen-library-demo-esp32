@@ -8,6 +8,8 @@ inline void Point_initialize(struct Point *self, int x, int y) {
 	self->y = y;
 }
 
+void delay(int milliseconds);
+
 #define MAX(a, b) (a > b ? a : b)
 #define MIN(a, b) (a > b ? b : a)
 #define ABS(a) (a < 0 ? -a : a)

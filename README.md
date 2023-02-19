@@ -37,3 +37,30 @@ Used Flash size :  151819 bytes
       .rodata   :   38652 bytes
 Total image size:  221961 bytes (.bin may be padded larger)
 ```
+
+## Debugging
+
+You need some configurations on the target MCU to make debugging possible.
+
+```
+idf.py menuconfig
+```
+
+Disable memory protection on
+
+```
+Component config --> ESP System Settings --> Memory protection
+```
+
+Then preparing openocd
+
+```sh
+sudo cp ~/.espressif/tools/openocd-esp32/v0.11.0-esp32-20221026/openocd-esp32/share/openocd/contrib/60-openocd.rules /etc/udev/rules.d/
+```
+
+Now you can start the debugger
+
+```sh
+idf.py openocd gdbtui
+```
+

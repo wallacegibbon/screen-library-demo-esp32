@@ -1,29 +1,52 @@
 #include "painter.h"
 #include "point_iterator.h"
+#include <stddef.h>
+#include <assert.h>
 
-void Painter_clear_fallback(
+void Painter_fill_fallback(
 	struct Painter *self, struct Point p1, struct Point p2, int color
 );
+
+void Painter_clear_fallback(struct Painter *self, int color);
 
 void Painter_draw_point(struct Painter *self, struct Point p, int color) {
 	PainterDrawPoint draw_point;
 
-	//printf("Painter_draw_point: p{%d,%d}\n", p.x, p.y);
 	draw_point = ((struct PainterInterface *) self->screen)->draw_point;
-	if (draw_point)
-		draw_point(self->screen, p, color);
+	assert(draw_point != NULL);
+
+	draw_point(self->screen, p, color);
 }
 
-void Painter_clear(
+void Painter_size(struct Painter *self, struct Point *p) {
+	PainterSize size;
+
+	size = ((struct PainterInterface *) self->screen)->size;
+	assert(size != NULL);
+
+	size(self->screen, p);
+}
+
+void Painter_fill(
 	struct Painter *self, struct Point p1, struct Point p2, int color
 ) {
+	PainterFill fill;
+
+	fill = ((struct PainterInterface *) self->screen)->fill;
+	if (fill)
+		fill(self->screen, p1, p2, color);
+	else
+		Painter_fill_fallback(self, p1, p2, color);
+}
+
+void Painter_clear(struct Painter *self, int color) {
 	PainterClear clear;
 
 	clear = ((struct PainterInterface *) self->screen)->clear;
 	if (clear)
-		clear(self->screen, p1, p2, color);
+		clear(self->screen, color);
 	else
-		Painter_clear_fallback(self, p1, p2, color);
+		Painter_clear_fallback(self, color);
 }
 
 void Painter_flush(struct Painter *self) {
@@ -34,7 +57,7 @@ void Painter_flush(struct Painter *self) {
 		flush(self->screen);
 }
 
-void Painter_clear_fallback(
+void Painter_fill_fallback(
 	struct Painter *self, struct Point p1, struct Point p2, int color
 ) {
 	struct RectPointIterator point_iterator;
@@ -45,6 +68,15 @@ void Painter_clear_fallback(
 
 	while (RectPointIterator_next(&point_iterator, &p))
 		Painter_draw_point(self, p, color);
+}
+
+void Painter_clear_fallback(struct Painter *self, int color) {
+	struct Point p1;
+	struct Point p2;
+
+	Point_initialize(&p1, 0, 0);
+	Painter_size(self, &p2);
+	Painter_fill_fallback(self, p1, p2, color);
 }
 
 void Painter_draw_line(

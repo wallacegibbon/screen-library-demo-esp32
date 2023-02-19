@@ -195,7 +195,8 @@ void SSD1306_Screen_iterate(
 void SSD1306_Screen_describe(struct SSD1306_Screen *self) {
 	printf(
 		"SSD1306@%p, painter_interface: base@%p\n"
-		"\tdraw_point@%p (-> %p)\n\tclear@%p (-> %p)\n",
+		"\tdraw_point@%p (-> %p)\n"
+		"\tclear@%p (-> %p)\n",
 		self,
 		&self->painter_interface,
 		&self->painter_interface.draw_point,
@@ -205,16 +206,15 @@ void SSD1306_Screen_describe(struct SSD1306_Screen *self) {
 	);
 }
 
+void SSD1306_Screen_size(struct SSD1306_Screen *self, struct Point *p) {
+	Point_initialize(p, self->size.x, self->size.y);
+}
+
 void SSD1306_Screen_flush(struct SSD1306_Screen *self) {
 	SSD1306_Screen_iterate(self, SSD1306_Screen_page_byte);
 }
 
-void SSD1306_Screen_clear(
-	struct SSD1306_Screen *self,
-	struct Point p1,
-	struct Point p2,
-	int color
-) {
+void SSD1306_Screen_clear(struct SSD1306_Screen *self, int color) {
 	/// self->clear_color works just like closure variables.
 	self->clear_color = color;
 	SSD1306_Screen_iterate(self, SSD1306_Screen_page_byte_empty);
@@ -229,12 +229,13 @@ void SSD1306_Screen_initialize(
 	self->painter_interface.draw_point =
 		(PainterDrawPoint) SSD1306_Screen_draw_point;
 
-	self->painter_interface.clear =
-		(PainterClear) SSD1306_Screen_clear;
-		//NULL;
+	self->painter_interface.size = (PainterSize) SSD1306_Screen_size;
 
-	self->painter_interface.flush =
-		(PainterFlush) SSD1306_Screen_flush;
+	self->painter_interface.clear = (PainterClear) SSD1306_Screen_clear;
+	//self->painter_interface.clear = NULL;
+	self->painter_interface.fill = NULL;
+
+	self->painter_interface.flush = (PainterFlush) SSD1306_Screen_flush;
 
 	self->address = address << 1;
 	self->i2c_num = i2c_num;

@@ -119,9 +119,7 @@ void app_main() {
 	painter.screen = &screen;
 
 	printf("clearing screen (from painter)...\n");
-	Point_initialize(&p1, 0, 0);
-	Point_initialize(&p2, 128, 64);
-	Painter_clear(&painter, p1, p2, BLACK_1bit);
+	Painter_clear(&painter, BLACK_1bit);
 
 	printf("drawing a rectangle...\n");
 	Point_initialize(&p1, 64 - 50, 32 - 20);

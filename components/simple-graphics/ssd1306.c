@@ -215,8 +215,8 @@ void SSD1306_Screen_flush(struct SSD1306_Screen *self) {
 }
 
 void SSD1306_Screen_clear(struct SSD1306_Screen *self, int color) {
-	/// self->clear_color works just like closure variables.
-	self->clear_color = color;
+	/// clear_color represents a page, not a point
+	self->clear_color = color ? 0xFF : 0;
 	SSD1306_Screen_iterate(self, SSD1306_Screen_page_byte_empty);
 }
 

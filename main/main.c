@@ -120,6 +120,7 @@ void app_main() {
 
 	printf("clearing screen (from painter)...\n");
 	Painter_clear(&painter, BLACK_1bit);
+	//Painter_clear(&painter, WHITE_1bit);
 
 	printf("drawing a rectangle...\n");
 	Point_initialize(&p1, 64 - 50, 32 - 20);

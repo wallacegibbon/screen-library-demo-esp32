@@ -102,46 +102,50 @@ void fancy_display_2(struct Painter *painter) {
 	delay(10);
 }
 
-void app_main() {
-	/*
-	spi_device_handle_t st7735_dev;
-	struct ST7735_Screen screen2;
-	*/
-	struct SSD1306_Screen screen1;
-	struct Painter painter;
-	struct Point p1;
-	struct Point p2;
-
+void initialize_screen_1(struct SSD1306_Screen *screen1) {
 	printf("initializing I2C device...\n");
 	i2c_device_init();
 
-	SSD1306_Screen_initialize(&screen1, 0x3C, I2C_NUM_0);
-	SSD1306_Screen_describe(&screen1);
+	printf("initializing SSD1306...\n");
+	SSD1306_Screen_initialize(screen1, 0x3C, I2C_NUM_0);
+
+	SSD1306_Screen_describe(screen1);
 
 	printf("SSD1306 screen on...\n");
-	SSD1306_Screen_display_on(&screen1);
+	SSD1306_Screen_display_on(screen1);
 
-	printf("setting SSD1306 screen to 32-row mode...\n");
+	//printf("setting SSD1306 screen to 32-row mode...\n");
 	//SSD1306_Screen_fix_32row(&screen);
+}
 
-	/// Screen specific features stops here,
-	/// Painter take the control
+void initialize_screen_2(struct ST7735_Screen *screen2) {
+	spi_device_handle_t st7735_dev;
 
-	/*
 	/// start the BG LED of T-Dongle-S3
 	ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_38, GPIO_MODE_OUTPUT));
-	//ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_38, 1));
 	ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_38, 0));
 
 	printf("initializing SPI device...\n");
 	spi_device_init(&st7735_dev);
-	ST7735_Screen_initialize(
-		&screen2, &st7735_dev, GPIO_NUM_4, GPIO_NUM_1, GPIO_NUM_2
-	);
-	*/
 
-	painter.screen = &screen1;
-	//painter.screen = &screen2;
+	printf("initializing ST7735...\n");
+	ST7735_Screen_initialize(
+		screen2, &st7735_dev, GPIO_NUM_4, GPIO_NUM_1, GPIO_NUM_2
+	);
+}
+
+void app_main() {
+	struct SSD1306_Screen screen1;
+	struct ST7735_Screen screen2;
+	struct Painter painter;
+	struct Point p1;
+	struct Point p2;
+
+	//initialize_screen_1(&screen1);
+	initialize_screen_2(&screen2);
+
+	//painter.screen = &screen1;
+	painter.screen = &screen2;
 
 	printf("clearing screen...\n");
 	Painter_clear(&painter, BLACK_16bit);

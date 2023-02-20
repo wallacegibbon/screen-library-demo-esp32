@@ -116,6 +116,8 @@ void ST7735_Screen_initialize(
 	uint8_t rst_pin,
 	uint8_t dc_pin
 ) {
+	memset(self, 0, sizeof(struct ST7735_Screen));
+
 	self->painter_interface.draw_point =
 		(PainterDrawPoint) ST7735_Screen_draw_point;
 

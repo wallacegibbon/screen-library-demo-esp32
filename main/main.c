@@ -144,25 +144,16 @@ void app_main() {
 	//painter.screen = &screen2;
 
 	printf("clearing screen...\n");
-	Painter_clear(&painter, BLACK_1bit);
-	/*
 	Painter_clear(&painter, BLACK_16bit);
-	*/
 
 	printf("drawing a rectangle...\n");
 	Point_initialize(&p1, 64 - 50, 32 - 20);
 	Point_initialize(&p2, 64 + 50, 32 + 20);
-	Painter_draw_rectangle(&painter, p1, p2, WHITE_1bit);
-	/*
 	Painter_draw_rectangle(&painter, p1, p2, BLUE_16bit);
-	*/
 
 	printf("drawing a circle on top left...\n");
 	Point_initialize(&p1, 64 - 50, 32 - 20);
-	Painter_draw_circle(&painter, p1, 5, WHITE_1bit);
-	/*
 	Painter_draw_circle(&painter, p1, 5, RED_16bit);
-	*/
 
 	/*
 	printf("drawing a line...\n");

@@ -228,6 +228,8 @@ void SSD1306_Screen_initialize(
 	int address,
 	i2c_port_t i2c_num
 ) {
+	memset(self, 0, sizeof(struct SSD1306_Screen));
+
 	/// The `draw_point` is necessary while `clear` is optional
 	self->painter_interface.draw_point =
 		(PainterDrawPoint) SSD1306_Screen_draw_point;
@@ -245,8 +247,6 @@ void SSD1306_Screen_initialize(
 
 	self->size.x = 128;
 	self->size.y = 64;
-
-	memset(self->buffer, 0, 128 * 8);
 
 	SSD1306_Screen_start_transmit(self);
 	SSD1306_Screen_cmd_multi_byte(self);

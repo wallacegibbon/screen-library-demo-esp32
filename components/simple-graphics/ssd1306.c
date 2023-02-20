@@ -118,6 +118,9 @@ void SSD1306_Screen_draw_point(
 	if (p.x >= self->size.x || p.y >= self->size.y)
 		return;
 
+	/// SSD1306 is mono color, this can handle wrong arguements
+	color = color ? 1 : 0;
+
 	page_idx = p.y / 8;
 	byte_idx = p.y % 8;
 

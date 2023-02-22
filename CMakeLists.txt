@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(EXTRA_COMPONENT_DIRS "./components/simple-graphics")
+set(EXTRA_COMPONENT_DIRS "./components/screen-library")
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(simple-graphics-demo-esp32)
+project(screen-library-demo-esp32)
 

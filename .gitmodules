@@ -1,0 +1,3 @@
+[submodule "components/screen-library/screen-library-mcu"]
+	path = components/screen-library/screen-library-mcu
+	url = git@github.com:wallacegibbon/screen-library-mcu.git

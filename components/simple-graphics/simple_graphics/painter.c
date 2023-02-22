@@ -3,88 +3,66 @@
 #include <stddef.h>
 #include <assert.h>
 
-void Painter_fill_fallback(
-	void *screen, struct Point p1, struct Point p2, int color
-);
+typedef void *(*PainterInterfaceDefaultFallbackHandler)();
+void *PainterInterface_default_fallback_handler() { return NULL; }
 
-void Painter_clear_fallback(void *screen, int color);
+void Painter_fill_fallback(
+	struct PainterInterface *screen, struct Point p1, struct Point p2, int color
+) {
+	struct RectPointIterator point_iterator;
+	struct Point p;
+
+	RectPointIterator_initialize(&point_iterator, p1, p2);
+
+	while (RectPointIterator_next(&point_iterator, &p))
+		screen->draw_point(screen, p, color);
+}
+
+void Painter_clear_fallback(struct PainterInterface *screen, int color) {
+	struct Point p1, p2;
+
+	Point_initialize(&p1, 0, 0);
+	screen->size(screen, &p2);
+	Painter_fill_fallback(screen, p1, p2, color);
+}
 
 /// The place-holder for interface methods
-void *PainterInterface_default_handler() { return NULL; }
-typedef void *(*PainterInterfaceDefaultHandler)();
-
 void PainterInterface_initialize_zero(struct PainterInterface *self) {
-	PainterInterfaceDefaultHandler *fp;
+	PainterInterfaceDefaultFallbackHandler *fp;
 	int size;
 
-	fp = (PainterInterfaceDefaultHandler *) self;
+	fp = (PainterInterfaceDefaultFallbackHandler *) self;
 	size = sizeof(struct PainterInterface) / sizeof(*fp);
 	while (size--)
-		*fp++ = PainterInterface_default_handler;
+		*fp++ = PainterInterface_default_fallback_handler;
 }
 
 void PainterInterface_initialize(struct PainterInterface *self) {
 	PainterInterface_initialize_zero(self);
-	self->clear = Painter_clear_fallback;
-	self->fill = Painter_fill_fallback;
+	self->clear = (PainterClear) Painter_clear_fallback;
+	self->fill = (PainterFill) Painter_fill_fallback;
 }
 
 void Painter_draw_point(struct Painter *self, struct Point p, int color) {
-	PainterDrawPoint draw_point;
-	draw_point = ((struct PainterInterface *) self->screen)->draw_point;
-	draw_point(self->screen, p, color);
+	self->screen->draw_point(self->screen, p, color);
 }
 
 void Painter_size(struct Painter *self, struct Point *p) {
-	PainterSize size;
-	size = ((struct PainterInterface *) self->screen)->size;
-	size(self->screen, p);
+	self->screen->size(self->screen, p);
 }
 
 void Painter_fill(
 	struct Painter *self, struct Point p1, struct Point p2, int color
 ) {
-	PainterFill fill;
-	fill = ((struct PainterInterface *) self->screen)->fill;
-	fill(self->screen, p1, p2, color);
+	self->screen->fill(self->screen, p1, p2, color);
 }
 
 void Painter_clear(struct Painter *self, int color) {
-	PainterClear clear;
-	clear = ((struct PainterInterface *) self->screen)->clear;
-	clear(self->screen, color);
+	self->screen->clear(self->screen, color);
 }
 
 void Painter_flush(struct Painter *self) {
-	PainterFlush flush;
-	flush = ((struct PainterInterface *) self->screen)->flush;
-	flush(self->screen);
-}
-
-void Painter_fill_fallback(
-	void *screen, struct Point p1, struct Point p2, int color
-) {
-	struct RectPointIterator point_iterator;
-	struct Point p;
-	PainterDrawPoint draw_point;
-
-	draw_point = ((struct PainterInterface *) screen)->draw_point;
-	RectPointIterator_initialize(&point_iterator, p1, p2);
-	RectPointIterator_describe(&point_iterator);
-
-	while (RectPointIterator_next(&point_iterator, &p))
-		draw_point(screen, p, color);
-}
-
-void Painter_clear_fallback(void *screen, int color) {
-	struct Point p1, p2;
-	PainterSize size;
-
-	Point_initialize(&p1, 0, 0);
-	size = ((struct PainterInterface *) screen)->size;
-	size(screen, &p2);
-
-	Painter_fill_fallback(screen, p1, p2, color);
+	self->screen->flush(self->screen);
 }
 
 void Painter_draw_line(

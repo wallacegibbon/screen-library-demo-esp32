@@ -1,5 +1,4 @@
 #include "ssd1306.h"
-#include "esp_log.h"
 #include <string.h>
 
 #define SSD1306_CTRL_WRITE_CMD_SINGLE 0x80
@@ -8,23 +7,15 @@
 #define SSD1306_CTRL_WRITE_DATA_MULTI 0x40
 
 void SSD1306_Screen_start_transmit(struct SSD1306_Screen *self) {
-	self->cmd_handle = i2c_cmd_link_create();
-	ESP_ERROR_CHECK(i2c_master_start(self->cmd_handle));
-	ESP_ERROR_CHECK(i2c_master_write_byte(
-		self->cmd_handle, self->address | I2C_MASTER_WRITE, true
-	));
+	self->adaptor->start_transmit(self->adaptor);
 }
 
 void SSD1306_Screen_stop_transmit(struct SSD1306_Screen *self) {
-	ESP_ERROR_CHECK(i2c_master_stop(self->cmd_handle));
-	ESP_ERROR_CHECK(i2c_master_cmd_begin(
-		self->i2c_num, self->cmd_handle, 10 / portTICK_PERIOD_MS
-	));
-	i2c_cmd_link_delete(self->cmd_handle);
+	self->adaptor->stop_transmit(self->adaptor);
 }
 
 void SSD1306_Screen_write_byte(struct SSD1306_Screen *self, uint8_t data) {
-	ESP_ERROR_CHECK(i2c_master_write_byte(self->cmd_handle, data, true));
+	self->adaptor->write_byte(self->adaptor, data);
 }
 
 void SSD1306_Screen_data_single_byte(
@@ -191,20 +182,6 @@ void SSD1306_Screen_iterate(
 		SSD1306_Screen_iterate_page(self, page, fn);
 }
 
-void SSD1306_Screen_describe(struct SSD1306_Screen *self) {
-	printf(
-		"SSD1306@%p, painter_interface: base@%p\n"
-		"\tdraw_point@%p (-> %p)\n"
-		"\tclear@%p (-> %p)\n",
-		self,
-		&self->painter_interface,
-		&self->painter_interface.draw_point,
-		self->painter_interface.draw_point,
-		&self->painter_interface.clear,
-		self->painter_interface.clear
-	);
-}
-
 void SSD1306_Screen_size(struct SSD1306_Screen *self, struct Point *p) {
 	Point_initialize(p, self->size.x, self->size.y);
 }
@@ -219,27 +196,7 @@ void SSD1306_Screen_clear(struct SSD1306_Screen *self, int color) {
 	SSD1306_Screen_iterate(self, SSD1306_Screen_page_byte_empty);
 }
 
-void SSD1306_Screen_initialize(
-	struct SSD1306_Screen *self, int address, i2c_port_t i2c_num
-) {
-	memset(self, 0, sizeof(struct SSD1306_Screen));
-
-	PainterInterface_initialize(&self->painter_interface);
-
-	/// The `draw_point` is necessary while `clear` is optional
-	self->painter_interface.draw_point =
-		(PainterDrawPoint) SSD1306_Screen_draw_point;
-
-	self->painter_interface.size = (PainterSize) SSD1306_Screen_size;
-	self->painter_interface.clear = (PainterClear) SSD1306_Screen_clear;
-	self->painter_interface.flush = (PainterFlush) SSD1306_Screen_flush;
-
-	self->address = address << 1;
-	self->i2c_num = i2c_num;
-
-	self->size.x = 128;
-	self->size.y = 64;
-
+void SSD1306_Screen_prepare(struct SSD1306_Screen *self) {
 	SSD1306_Screen_start_transmit(self);
 	SSD1306_Screen_cmd_multi_byte_start(self);
 
@@ -259,5 +216,27 @@ void SSD1306_Screen_initialize(
 	//SSD1306_Screen_write_byte(self, 0x22);
 
 	SSD1306_Screen_stop_transmit(self);
+}
+
+void SSD1306_Screen_initialize(
+	struct SSD1306_Screen *self,
+	struct SSD1306_ScreenAdaptorInterface *adaptor
+) {
+	memset(self, 0, sizeof(struct SSD1306_Screen));
+	PainterInterface_initialize(&self->painter_interface);
+
+	self->painter_interface.draw_point =
+		(PainterDrawPoint) SSD1306_Screen_draw_point;
+
+	self->painter_interface.size = (PainterSize) SSD1306_Screen_size;
+	self->painter_interface.clear = (PainterClear) SSD1306_Screen_clear;
+	self->painter_interface.flush = (PainterFlush) SSD1306_Screen_flush;
+
+	self->adaptor = adaptor;
+
+	self->size.x = 128;
+	self->size.y = 64;
+
+	SSD1306_Screen_prepare(self);
 }
 

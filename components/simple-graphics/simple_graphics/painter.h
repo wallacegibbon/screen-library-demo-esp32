@@ -4,17 +4,10 @@
 #include "common.h"
 
 typedef void (*PainterDrawPoint)(void *screen, struct Point p, int color);
-
-typedef void (*PainterSize)(void *screen, struct Point *p);
-
+typedef void (*PainterFill)(void *screen, struct Point p1, struct Point p2, int color);
 typedef void (*PainterClear)(void *screen, int color);
-
-typedef void (*PainterFill)(
-	void *screen, struct Point p1, struct Point p2, int color
-);
-
+typedef void (*PainterSize)(void *screen, struct Point *p);
 typedef void (*PainterFlush)(void *screen);
-
 
 /// Screens who implement the Painter interface should put
 /// the PainterInterface at the start of the struct.
@@ -32,7 +25,7 @@ struct PainterInterface {
 };
 
 struct Painter {
-	void *screen;
+	struct PainterInterface *screen;
 };
 
 void PainterInterface_initialize(struct PainterInterface *self);
@@ -44,6 +37,7 @@ void Painter_size(struct Painter *self, struct Point *p);
 void Painter_fill(
 	struct Painter *self, struct Point p1, struct Point p2, int color
 );
+
 void Painter_clear(struct Painter *self, int color);
 void Painter_flush(struct Painter *self);
 

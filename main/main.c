@@ -72,7 +72,7 @@ void fancy_display_1(struct Painter *painter) {
 
 	Point_initialize(&p, 64, 32);
 	for (i = 0; i < 31; i++) {
-		color = current_cnt == i ? BLACK_1bit : WHITE_1bit;
+		color = current_cnt == i ? BLACK_16bit : GREEN_16bit;
 		Painter_draw_circle(painter, p, i, color);
 	}
 	Painter_flush(painter);
@@ -83,23 +83,6 @@ void fancy_display_1(struct Painter *painter) {
 		step = 1;
 
 	current_cnt += step;
-}
-
-void fancy_display_2(struct Painter *painter) {
-	static unsigned short current_color = 0;
-	static int color = 0;
-	struct Point p;
-	int i;
-
-	Point_initialize(&p, 64, 32);
-	for (i = 0; i < 31; i++) {
-		current_color += 20;
-		Painter_draw_circle(painter, p, i, color);
-		color = !color;
-		Painter_flush(painter);
-	}
-
-	delay(10);
 }
 
 void initialize_screen_1(struct SSD1306_Screen *screen1) {
@@ -119,18 +102,13 @@ void initialize_screen_1(struct SSD1306_Screen *screen1) {
 }
 
 void initialize_screen_2(struct ST7735_Screen *screen2) {
-	spi_device_handle_t st7735_dev;
-
 	/// start the BG LED of T-Dongle-S3
 	ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_38, GPIO_MODE_OUTPUT));
 	ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_38, 0));
 
-	printf("initializing SPI device...\n");
-	spi_device_init(&st7735_dev);
-
 	printf("initializing ST7735...\n");
 	ST7735_Screen_initialize(
-		screen2, &st7735_dev, GPIO_NUM_4, GPIO_NUM_1, GPIO_NUM_2
+		screen2, GPIO_NUM_3, GPIO_NUM_5, GPIO_NUM_4, GPIO_NUM_1, GPIO_NUM_2
 	);
 }
 

@@ -56,6 +56,7 @@ int LinePointIterator_next(
 	struct LinePointIterator *self, struct Point *result
 ) {
 	//printf("next line point {%d,%d}\n", self->cursor.x, self->cursor.y);
+	*result = self->cursor;
 	self->acc.x += self->delta.x;
 	if (self->acc.x >= self->distance) {
 		self->acc.x -= self->distance;
@@ -66,7 +67,47 @@ int LinePointIterator_next(
 		self->acc.y -= self->distance;
 		self->cursor.y += self->step.y;
 	}
-	*result = self->cursor;
 	return self->count++ < self->distance;
+}
+
+void CirclePointIterator_initialize(
+	struct CirclePointIterator *self, struct Point center, int radius
+) {
+	self->center = center;
+	self->radius = radius;
+	self->px = radius;
+	self->py = 0;
+}
+
+int CirclePointIterator_next(
+	struct CirclePointIterator *self, struct Point *buffer
+) {
+	if (self->py > self->px)
+		return 0;
+
+	buffer[0].x = self->center.x - self->px;
+	buffer[0].y = self->center.y - self->py;
+	buffer[1].x = self->center.x - self->px;
+	buffer[1].y = self->center.y + self->py;
+	buffer[2].x = self->center.x + self->px;
+	buffer[2].y = self->center.y - self->py;
+	buffer[3].x = self->center.x + self->px;
+	buffer[3].y = self->center.y + self->py;
+
+	buffer[4].x = self->center.x - self->py;
+	buffer[4].y = self->center.y - self->px;
+	buffer[5].x = self->center.x - self->py;
+	buffer[5].y = self->center.y + self->px;
+	buffer[6].x = self->center.x + self->py;
+	buffer[6].y = self->center.y - self->px;
+	buffer[7].x = self->center.x + self->py;
+	buffer[7].y = self->center.y + self->px;
+
+	self->py++;
+
+	if ((SQUARE(self->py) + SQUARE(self->px)) > SQUARE(self->radius))
+		self->px--;
+
+	return 1;
 }
 

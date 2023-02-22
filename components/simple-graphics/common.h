@@ -14,6 +14,7 @@ void delay(int milliseconds);
 #define MIN(a, b) (a > b ? b : a)
 #define ABS(a) (a < 0 ? -a : a)
 #define UNIT_VAL(a) (a < 0 ? -1 : 1)
+#define SQUARE(a) (a * a)
 
 #endif
 

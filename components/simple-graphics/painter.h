@@ -3,15 +3,17 @@
 
 #include "common.h"
 
-typedef void (*PainterDrawPoint)(void *self, struct Point p, int color);
-typedef void (*PainterSize)(void *self, struct Point *p);
+typedef void (*PainterDrawPoint)(void *screen, struct Point p, int color);
 
-typedef void (*PainterClear)(void *self, int color);
+typedef void (*PainterSize)(void *screen, struct Point *p);
+
+typedef void (*PainterClear)(void *screen, int color);
+
 typedef void (*PainterFill)(
-	void *self, struct Point p1, struct Point p2, int color
+	void *screen, struct Point p1, struct Point p2, int color
 );
 
-typedef void (*PainterFlush)(void *self);
+typedef void (*PainterFlush)(void *screen);
 
 
 /// Screens who implement the Painter interface should put
@@ -32,6 +34,8 @@ struct PainterInterface {
 struct Painter {
 	void *screen;
 };
+
+void PainterInterface_initialize(struct PainterInterface *self);
 
 /// Core functionalities
 void Painter_draw_point(struct Painter *self, struct Point p, int color);

@@ -27,25 +27,31 @@ void SSD1306_Screen_write_byte(struct SSD1306_Screen *self, uint8_t data) {
 	ESP_ERROR_CHECK(i2c_master_write_byte(self->cmd_handle, data, true));
 }
 
-void SSD1306_Screen_data_single_byte(struct SSD1306_Screen *self) {
+void SSD1306_Screen_data_single_byte(
+	struct SSD1306_Screen *self, uint8_t data
+) {
 	SSD1306_Screen_write_byte(self, SSD1306_CTRL_WRITE_DATA_SINGLE);
+	SSD1306_Screen_write_byte(self, data);
 }
 
-void SSD1306_Screen_data_multi_byte(struct SSD1306_Screen *self) {
+void SSD1306_Screen_data_multi_byte_start(struct SSD1306_Screen *self) {
 	SSD1306_Screen_write_byte(self, SSD1306_CTRL_WRITE_DATA_MULTI);
 }
 
-void SSD1306_Screen_cmd_single_byte(struct SSD1306_Screen *self) {
+void SSD1306_Screen_cmd_single_byte(
+	struct SSD1306_Screen *self, uint8_t data
+) {
 	SSD1306_Screen_write_byte(self, SSD1306_CTRL_WRITE_CMD_SINGLE);
+	SSD1306_Screen_write_byte(self, data);
 }
 
-void SSD1306_Screen_cmd_multi_byte(struct SSD1306_Screen *self) {
+void SSD1306_Screen_cmd_multi_byte_start(struct SSD1306_Screen *self) {
 	SSD1306_Screen_write_byte(self, SSD1306_CTRL_WRITE_CMD_MULTI);
 }
 
 void SSD1306_Screen_fix_32row(struct SSD1306_Screen *self) {
 	SSD1306_Screen_start_transmit(self);
-	SSD1306_Screen_cmd_multi_byte(self);
+	SSD1306_Screen_cmd_multi_byte_start(self);
 
 	SSD1306_Screen_write_byte(self, 0xA8);
 	SSD1306_Screen_write_byte(self, 0x1F);
@@ -57,7 +63,7 @@ void SSD1306_Screen_fix_32row(struct SSD1306_Screen *self) {
 
 void SSD1306_Screen_set_up_down_invert(struct SSD1306_Screen *self) {
 	SSD1306_Screen_start_transmit(self);
-	SSD1306_Screen_cmd_multi_byte(self);
+	SSD1306_Screen_cmd_multi_byte_start(self);
 	if (self->direction) {
 		SSD1306_Screen_write_byte(self, 0xA0);
 		SSD1306_Screen_write_byte(self, 0xC0);
@@ -73,7 +79,7 @@ void SSD1306_Screen_set_brightness(
 	struct SSD1306_Screen *self, uint8_t value
 ) {
 	SSD1306_Screen_start_transmit(self);
-	SSD1306_Screen_cmd_multi_byte(self);
+	SSD1306_Screen_cmd_multi_byte_start(self);
 	SSD1306_Screen_write_byte(self, 0x81);
 	SSD1306_Screen_write_byte(self, value);
 	SSD1306_Screen_stop_transmit(self);
@@ -81,14 +87,13 @@ void SSD1306_Screen_set_brightness(
 
 void SSD1306_Screen_color_reverse(struct SSD1306_Screen *self) {
 	SSD1306_Screen_start_transmit(self);
-	SSD1306_Screen_cmd_single_byte(self);
-	SSD1306_Screen_write_byte(self, 0xA7);
+	SSD1306_Screen_cmd_single_byte(self, 0xA7);
 	SSD1306_Screen_stop_transmit(self);
 }
 
 void SSD1306_Screen_display_on(struct SSD1306_Screen *self) {
 	SSD1306_Screen_start_transmit(self);
-	SSD1306_Screen_cmd_multi_byte(self);
+	SSD1306_Screen_cmd_multi_byte_start(self);
 	/// turn on the charge pump
 	SSD1306_Screen_write_byte(self, 0x8D);
 	SSD1306_Screen_write_byte(self, 0x14);
@@ -99,7 +104,7 @@ void SSD1306_Screen_display_on(struct SSD1306_Screen *self) {
 
 void SSD1306_Screen_display_off(struct SSD1306_Screen *self) {
 	SSD1306_Screen_start_transmit(self);
-	SSD1306_Screen_cmd_multi_byte(self);
+	SSD1306_Screen_cmd_multi_byte_start(self);
 	/// turn on the charge pump
 	SSD1306_Screen_write_byte(self, 0x8D);
 	SSD1306_Screen_write_byte(self, 0x10);
@@ -108,12 +113,23 @@ void SSD1306_Screen_display_off(struct SSD1306_Screen *self) {
 	SSD1306_Screen_stop_transmit(self);
 }
 
+void SSD1306_Screen_draw_cell(
+	struct SSD1306_Screen *self, int x, int page_idx, int cell_value
+) {
+	SSD1306_Screen_start_transmit(self);
+
+	SSD1306_Screen_cmd_single_byte(self, 0xB0 + page_idx);
+	SSD1306_Screen_cmd_single_byte(self, ((x >> 4) & 0x0F) | 0x10);
+	SSD1306_Screen_cmd_single_byte(self, x & 0x0F);
+	SSD1306_Screen_data_single_byte(self, cell_value);
+
+	SSD1306_Screen_stop_transmit(self);
+}
+
 void SSD1306_Screen_draw_point(
 	struct SSD1306_Screen *self, struct Point p, int color
 ) {
-	int page_idx;
-	int byte_idx;
-	int tmp;
+	int page_idx, byte_idx, tmp;
 
 	if (p.x >= self->size.x || p.y >= self->size.y)
 		return;
@@ -127,26 +143,11 @@ void SSD1306_Screen_draw_point(
 	tmp = self->buffer[p.x][page_idx];
 	tmp &= ~(1 << byte_idx);
 	tmp |= color << byte_idx;
+
 	self->buffer[p.x][page_idx] = tmp;
 
-	if (!self->auto_flush)
-		return;
-
-	SSD1306_Screen_start_transmit(self);
-
-	SSD1306_Screen_cmd_single_byte(self);
-	SSD1306_Screen_write_byte(self, 0xB0 + page_idx);
-
-	SSD1306_Screen_cmd_single_byte(self);
-	SSD1306_Screen_write_byte(self, ((p.x >> 4) & 0x0F) | 0x10);
-
-	SSD1306_Screen_cmd_single_byte(self);
-	SSD1306_Screen_write_byte(self, p.x & 0x0F);
-
-	SSD1306_Screen_data_single_byte(self);
-	SSD1306_Screen_write_byte(self, tmp);
-
-	SSD1306_Screen_stop_transmit(self);
+	if (self->auto_flush)
+		SSD1306_Screen_draw_cell(self, p.x, page_idx, tmp);
 }
 
 int SSD1306_Screen_page_byte(
@@ -169,16 +170,11 @@ void SSD1306_Screen_iterate_page(
 	int x;
 
 	SSD1306_Screen_start_transmit(self);
-	SSD1306_Screen_cmd_single_byte(self);
-	SSD1306_Screen_write_byte(self, 0xB0 + page_index);
+	SSD1306_Screen_cmd_single_byte(self, 0xB0 + page_index);
+	SSD1306_Screen_cmd_single_byte(self, 0x00);
+	SSD1306_Screen_cmd_single_byte(self, 0x10);
 
-	SSD1306_Screen_cmd_single_byte(self);
-	SSD1306_Screen_write_byte(self, 0x00);
-
-	SSD1306_Screen_cmd_single_byte(self);
-	SSD1306_Screen_write_byte(self, 0x10);
-
-	SSD1306_Screen_data_multi_byte(self);
+	SSD1306_Screen_data_multi_byte_start(self);
 
 	for (x = 0; x < 128; x++)
 		SSD1306_Screen_write_byte(self, fn(self, page_index, x));
@@ -224,22 +220,18 @@ void SSD1306_Screen_clear(struct SSD1306_Screen *self, int color) {
 }
 
 void SSD1306_Screen_initialize(
-	struct SSD1306_Screen *self,
-	int address,
-	i2c_port_t i2c_num
+	struct SSD1306_Screen *self, int address, i2c_port_t i2c_num
 ) {
 	memset(self, 0, sizeof(struct SSD1306_Screen));
+
+	PainterInterface_initialize(&self->painter_interface);
 
 	/// The `draw_point` is necessary while `clear` is optional
 	self->painter_interface.draw_point =
 		(PainterDrawPoint) SSD1306_Screen_draw_point;
 
 	self->painter_interface.size = (PainterSize) SSD1306_Screen_size;
-
 	self->painter_interface.clear = (PainterClear) SSD1306_Screen_clear;
-	//self->painter_interface.clear = NULL;
-	self->painter_interface.fill = NULL;
-
 	self->painter_interface.flush = (PainterFlush) SSD1306_Screen_flush;
 
 	self->address = address << 1;
@@ -249,7 +241,7 @@ void SSD1306_Screen_initialize(
 	self->size.y = 64;
 
 	SSD1306_Screen_start_transmit(self);
-	SSD1306_Screen_cmd_multi_byte(self);
+	SSD1306_Screen_cmd_multi_byte_start(self);
 
 	/// normal direction, can be changed by method `up_down_invert`
 	SSD1306_Screen_write_byte(self, 0xA0);

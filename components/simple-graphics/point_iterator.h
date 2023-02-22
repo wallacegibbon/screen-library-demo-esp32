@@ -19,6 +19,13 @@ struct RectPointIterator {
 	struct Point cursor;
 };
 
+struct CirclePointIterator {
+	struct Point center;
+	int radius;
+	int px;
+	int py;
+};
+
 void RectPointIterator_initialize(
 	struct RectPointIterator *self,
 	struct Point p1,
@@ -41,6 +48,14 @@ void LinePointIterator_initialize(
 int LinePointIterator_next(
 	struct LinePointIterator *self,
 	struct Point *result
+);
+
+void CirclePointIterator_initialize(
+	struct CirclePointIterator *self, struct Point center, int radius
+);
+
+int CirclePointIterator_next(
+	struct CirclePointIterator *self, struct Point *buffer
 );
 
 #endif

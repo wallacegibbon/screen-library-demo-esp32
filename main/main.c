@@ -34,7 +34,9 @@ void initialize_screen_1(
 ) {
 	printf("initializing SSD1306...\n");
 
-	SSD1306_ScreenAdaptorESP32I2C_initialize(adaptor1, 0x3C, I2C_NUM_0);
+	SSD1306_ScreenAdaptorESP32I2C_initialize(
+		adaptor1, 0x3C, I2C_NUM_0
+	);
 
 	SSD1306_Screen_initialize(
 		screen1,
@@ -79,6 +81,8 @@ void app_main() {
 
 	initialize_screen_1(&screen1, &adaptor1);
 	initialize_screen_2(&screen2, &adaptor2);
+
+	SSD1306_Screen_set_up_down_invert(&screen1);
 
 	painter.screen = (struct PainterInterface *) &screen1;
 	//painter.screen = (struct PainterInterface *) &screen2;

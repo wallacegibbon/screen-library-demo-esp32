@@ -84,8 +84,8 @@ void app_main() {
 
 	SSD1306_Screen_set_up_down_invert(&screen1);
 
-	painter.screen = (struct PainterInterface *) &screen1;
-	//painter.screen = (struct PainterInterface *) &screen2;
+	painter.screen = (struct DrawingBoardInterface *) &screen1;
+	//painter.screen = (struct DrawingBoardInterface *) &screen2;
 
 	printf("clearing screen...\n");
 	Painter_clear(&painter, BLACK_16bit);

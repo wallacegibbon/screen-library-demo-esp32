@@ -32,7 +32,7 @@ void initialize_screen_1(
 	struct SSD1306_Screen *screen1,
 	struct SSD1306_ScreenAdaptorESP32I2C *adaptor1
 ) {
-	printf("initializing SSD1306...\n");
+	printf("initializing SSD1306...\r\n");
 
 	SSD1306_ScreenAdaptorESP32I2C_initialize(
 		adaptor1, 0x3C, I2C_NUM_0
@@ -43,10 +43,10 @@ void initialize_screen_1(
 		(struct SSD1306_ScreenAdaptorInterface *) adaptor1
 	);
 
-	printf("SSD1306 screen on...\n");
+	printf("SSD1306 screen on...\r\n");
 	SSD1306_Screen_display_on(screen1);
 
-	//printf("setting SSD1306 screen to 32-row mode...\n");
+	//printf("setting SSD1306 screen to 32-row mode...\r\n");
 	//SSD1306_Screen_fix_32row(&screen);
 }
 
@@ -58,7 +58,7 @@ void initialize_screen_2(
 	ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_38, GPIO_MODE_OUTPUT));
 	ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_38, 0));
 
-	printf("initializing ST7735...\n");
+	printf("initializing ST7735...\r\n");
 
 	ST7735_ScreenAdaptorESP32SoftSPI_initialize(
 		adaptor2, GPIO_NUM_3, GPIO_NUM_5, GPIO_NUM_4, GPIO_NUM_1, GPIO_NUM_2
@@ -87,26 +87,26 @@ void app_main() {
 	painter.screen = (struct DrawingBoardInterface *) &screen1;
 	//painter.screen = (struct DrawingBoardInterface *) &screen2;
 
-	printf("clearing screen...\n");
+	printf("clearing screen...\r\n");
 	Painter_clear(&painter, BLACK_16bit);
 
-	printf("drawing a rectangle...\n");
+	printf("drawing a rectangle...\r\n");
 	Point_initialize(&p1, 64 - 50, 32 - 20);
 	Point_initialize(&p2, 64 + 50, 32 + 20);
 	Painter_draw_rectangle(&painter, p1, p2, BLUE_16bit);
 
-	printf("drawing a circle on top left...\n");
+	printf("drawing a circle on top left...\r\n");
 	Point_initialize(&p1, 64 - 50, 32 - 20);
 	Painter_draw_circle(&painter, p1, 5, RED_16bit);
 
 	/*
-	printf("drawing a line...\n");
+	printf("drawing a line...\r\n");
 	Point_initialize(&p1, 30, 10);
 	Point_initialize(&p2, 20, 50);
 	Painter_draw_line(&painter, p1, p2, WHITE_1bit);
 	*/
 
-	printf("flushing the screen...\n");
+	printf("flushing the screen...\r\n");
 	Painter_flush(&painter);
 
 	while (1) {

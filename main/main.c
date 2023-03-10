@@ -2,9 +2,9 @@
 #include "ssd1306.h"
 #include "st7735_esp32_softspi.h"
 #include "st7735.h"
-#include "painter.h"
-#include "common.h"
-#include "color.h"
+#include "screen_painter.h"
+#include "screen_common.h"
+#include "screen_color.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
 
@@ -40,7 +40,7 @@ void initialize_screen_1(
 
 	SSD1306_Screen_initialize(
 		screen1,
-		(struct SSD1306_ScreenAdaptorInterface *) adaptor1
+		(struct SSD1306_ScreenAdaptorInterface **) adaptor1
 	);
 
 	printf("SSD1306 screen on...\r\n");
@@ -66,7 +66,7 @@ void initialize_screen_2(
 
 	ST7735_Screen_initialize(
 		screen2,
-		(struct ST7735_ScreenAdaptorInterface *) adaptor2
+		(struct ST7735_ScreenAdaptorInterface **) adaptor2
 	);
 }
 
@@ -79,13 +79,13 @@ void app_main() {
 	struct Point p1;
 	struct Point p2;
 
-	initialize_screen_1(&screen1, &adaptor1);
+	//initialize_screen_1(&screen1, &adaptor1);
 	initialize_screen_2(&screen2, &adaptor2);
 
-	SSD1306_Screen_set_up_down_invert(&screen1);
+	//SSD1306_Screen_set_up_down_invert(&screen1);
 
-	painter.screen = (struct DrawingBoardInterface *) &screen1;
-	//painter.screen = (struct DrawingBoardInterface *) &screen2;
+	//painter.drawing_board = (struct DrawingBoardInterface **) &screen1;
+	painter.drawing_board = (struct DrawingBoardInterface **) &screen2;
 
 	printf("clearing screen...\r\n");
 	Painter_clear(&painter, BLACK_16bit);

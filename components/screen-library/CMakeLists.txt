@@ -7,7 +7,7 @@ idf_component_register(
 	"screen-library-mcu/sc_common.c"
 	"screen-library-mcu/esp32/sc_ssd1306_esp32_i2c.c"
 	"screen-library-mcu/esp32/sc_st7735_esp32_softspi.c"
-	"screen-library-mcu/esp32/sc_common.c"
+	"screen-library-mcu/esp32/sc_common_esp32.c"
 	INCLUDE_DIRS
 	"screen-library-mcu"
 	"screen-library-mcu/esp32"

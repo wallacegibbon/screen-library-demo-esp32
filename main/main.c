@@ -8,12 +8,15 @@
 #include "sc_st7735.h"
 #include "sc_st7735_esp32_softspi.h"
 
-void fancy_display_1(struct painter *painter) {
+void fancy_display(struct painter *painter) {
 	static int current_cnt = 0, step = 1;
 	struct point p;
-	int color, i;
+	struct point size;
+	uint32_t color;
+	int i;
 
-	point_initialize(&p, 64, 32);
+	painter_size(painter, &size);
+	point_initialize(&p, size.x / 2, size.y / 2);
 	for (i = 0; i < 31; i++) {
 		color = current_cnt == i ? BLACK_16bit : GREEN_16bit;
 		painter_draw_circle(painter, p, i, color);
@@ -62,14 +65,50 @@ void initialize_screen_2(
 		(const struct st7735_adaptor_i **)adaptor2);
 }
 
+void graphic_play(struct painter *painter) {
+	struct point p1, p2, size;
+	struct text_painter text_painter;
+
+	painter_clear(painter, 0);
+
+	/// The default method do not flush, but overridden `clear` can do flush automatically.
+	// painter_flush(painter);
+
+	/// text drawing
+	text_painter_initialize(&text_painter, painter);
+
+	color_pair_initialize(&text_painter.color, 0xFF0000, 0);
+	point_initialize(&text_painter.pos, 0, 0);
+
+	text_draw_string(&text_painter, "1.5 Programming!", 32);
+
+	color_pair_initialize(&text_painter.color, 0x00AAAA, 0);
+	point_initialize(&text_painter.pos, 0, 32);
+
+	text_draw_string(&text_painter, "1.5 Programming!", 16);
+
+	painter_size(painter, &size);
+
+	point_initialize(&p1, size.x / 2 - 50, size.y / 2 - 20);
+	point_initialize(&p2, size.x / 2 + 50, size.y / 2 + 20);
+	painter_draw_rectangle(painter, p1, p2, 0x0000FF);
+
+	point_initialize(&p1, size.x / 2 - 50, size.y / 2 - 20);
+	painter_draw_circle(painter, p1, 5, 0xFF0000);
+
+	point_initialize(&p1, 10, size.y / 2 - 20);
+	point_initialize(&p2, 10, size.y / 2 + 20);
+	painter_draw_line(painter, p1, p2, WHITE_16bit);
+
+	painter_flush(painter);
+}
+
 void app_main() {
 	struct ssd1306_adaptor_esp32_i2c adaptor1;
 	struct ssd1306_screen screen1;
 	struct st7735_adaptor_esp32_soft_spi adaptor2;
 	struct st7735_screen screen2;
 	struct painter painter;
-	struct point p1;
-	struct point p2;
 
 	// initialize_screen_1(&screen1, &adaptor1);
 	initialize_screen_2(&screen2, &adaptor2);
@@ -79,29 +118,8 @@ void app_main() {
 	// painter.drawing_board = (struct drawing_i **) &screen1;
 	painter.drawing_board = (const struct drawing_i **)&screen2;
 
-	printf("clearing screen...\r\n");
-	painter_clear(&painter, BLACK_16bit);
+	graphic_play(&painter);
 
-	printf("drawing a rectangle...\r\n");
-	point_initialize(&p1, 64 - 50, 32 - 20);
-	point_initialize(&p2, 64 + 50, 32 + 20);
-	painter_draw_rectangle(&painter, p1, p2, BLUE_16bit);
-
-	printf("drawing a circle on top left...\r\n");
-	point_initialize(&p1, 64 - 50, 32 - 20);
-	painter_draw_circle(&painter, p1, 5, RED_16bit);
-
-	/*
-	printf("drawing a line...\r\n");
-	point_initialize(&p1, 30, 10);
-	point_initialize(&p2, 20, 50);
-	painter_draw_line(&painter, p1, p2, WHITE_1bit);
-	*/
-
-	printf("flushing the screen...\r\n");
-	painter_flush(&painter);
-
-	while (1) {
-		fancy_display_1(&painter);
-	}
+	while (1)
+		fancy_display(&painter);
 }

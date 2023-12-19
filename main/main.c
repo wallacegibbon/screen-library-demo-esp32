@@ -69,7 +69,7 @@ void graphic_play(struct painter *painter) {
 	struct point p1, p2, size;
 	struct text_painter text_painter;
 
-	painter_clear(painter, 0);
+	painter_clear(painter, BLACK_16bit);
 
 	/// The default method do not flush, but overridden `clear` can do flush automatically.
 	// painter_flush(painter);
@@ -77,12 +77,12 @@ void graphic_play(struct painter *painter) {
 	/// text drawing
 	text_painter_initialize(&text_painter, painter);
 
-	color_pair_initialize(&text_painter.color, 0xFF0000, 0);
+	color_pair_initialize(&text_painter.color, RED_16bit, BLACK_16bit);
 	point_initialize(&text_painter.pos, 0, 0);
 
 	text_draw_string(&text_painter, "1.5 Programming!", 32);
 
-	color_pair_initialize(&text_painter.color, 0x00AAAA, 0);
+	color_pair_initialize(&text_painter.color, CYAN_16bit, BLACK_16bit);
 	point_initialize(&text_painter.pos, 0, 32);
 
 	text_draw_string(&text_painter, "1.5 Programming!", 16);
@@ -91,10 +91,10 @@ void graphic_play(struct painter *painter) {
 
 	point_initialize(&p1, size.x / 2 - 50, size.y / 2 - 20);
 	point_initialize(&p2, size.x / 2 + 50, size.y / 2 + 20);
-	painter_draw_rectangle(painter, p1, p2, 0x0000FF);
+	painter_draw_rectangle(painter, p1, p2, BLUE_16bit);
 
 	point_initialize(&p1, size.x / 2 - 50, size.y / 2 - 20);
-	painter_draw_circle(painter, p1, 5, 0xFF0000);
+	painter_draw_circle(painter, p1, 5, RED_16bit);
 
 	point_initialize(&p1, 10, size.y / 2 - 20);
 	point_initialize(&p2, 10, size.y / 2 + 20);

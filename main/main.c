@@ -18,7 +18,7 @@ void fancy_display(struct painter *painter) {
 	painter_size(painter, &size);
 	point_initialize(&p, size.x / 2, size.y / 2);
 	for (i = 0; i < 31; i++) {
-		color = current_cnt == i ? BLACK_16bit : GREEN_16bit;
+		color = (ABS(current_cnt - i) < 3) ? BLACK_24bit : CYAN_24bit;
 		painter_draw_circle(painter, p, i, color);
 	}
 	painter_flush(painter);
@@ -69,7 +69,7 @@ void graphic_play(struct painter *painter) {
 	struct point p1, p2, size;
 	struct text_painter text_painter;
 
-	painter_clear(painter, BLACK_16bit);
+	painter_clear(painter, BLACK_24bit);
 
 	/// The default method do not flush, but overridden `clear` can do flush automatically.
 	// painter_flush(painter);
@@ -77,12 +77,12 @@ void graphic_play(struct painter *painter) {
 	/// text drawing
 	text_painter_initialize(&text_painter, painter);
 
-	color_pair_initialize(&text_painter.color, RED_16bit, BLACK_16bit);
+	color_pair_initialize(&text_painter.color, RED_24bit, BLACK_24bit);
 	point_initialize(&text_painter.pos, 0, 0);
 
 	text_draw_string(&text_painter, "1.5 Programming!", 32);
 
-	color_pair_initialize(&text_painter.color, CYAN_16bit, BLACK_16bit);
+	color_pair_initialize(&text_painter.color, GREEN_24bit, BLACK_24bit);
 	point_initialize(&text_painter.pos, 0, 32);
 
 	text_draw_string(&text_painter, "1.5 Programming!", 16);
@@ -91,14 +91,14 @@ void graphic_play(struct painter *painter) {
 
 	point_initialize(&p1, size.x / 2 - 50, size.y / 2 - 20);
 	point_initialize(&p2, size.x / 2 + 50, size.y / 2 + 20);
-	painter_draw_rectangle(painter, p1, p2, BLUE_16bit);
+	painter_draw_rectangle(painter, p1, p2, YELLOW_24bit);
 
 	point_initialize(&p1, size.x / 2 - 50, size.y / 2 - 20);
-	painter_draw_circle(painter, p1, 5, RED_16bit);
+	painter_draw_circle(painter, p1, 5, MAGENTA_24bit);
 
 	point_initialize(&p1, 10, size.y / 2 - 20);
 	point_initialize(&p2, 10, size.y / 2 + 20);
-	painter_draw_line(painter, p1, p2, WHITE_16bit);
+	painter_draw_line(painter, p1, p2, WHITE_24bit);
 
 	painter_flush(painter);
 }
